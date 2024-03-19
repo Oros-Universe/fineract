@@ -1,0 +1,79 @@
+# Default values for generic3.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Support for Deployment, Statefulset, Job and CronJob resource types
+
+resourceType: Deployment  #OR Statefulset OR Job OR CronJob
+
+#deployment name overriding
+nameOverride: "community-app"
+fullnameOverride: ""
+
+#App specific details
+app:
+  name: fineract-fe
+  port: 80
+  static_root: /
+
+
+#Readiness/ Liveness probes
+  probe:
+    type: none   #or tcp
+    path: /
+    port: app
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+
+image:
+  repository: openmf/community-app
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+
+# App pod resources
+resources:
+  limits:
+    cpu: 150m
+    memory: 256Mi
+  requests:
+    cpu: 52m
+    memory: 64Mi
+
+
+autoscaling:
+  enabled: false
+
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+
+service:
+  type: ClusterIP   # LoadBalancer
+  port: 80
+
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+#    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+
+  hosts:
+    - host: fineract-fe-stg.orosbank.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: fineract-fe-tls
+      hosts:
+        - fineract-fe-stg.orosbank.com

@@ -1,0 +1,97 @@
+# Default values for generic3.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Support for Deployment, Statefulset, Job and CronJob resource types
+
+resourceType: Deployment  #OR Statefulset OR Job OR CronJob
+
+# Num of replicas to run; if autoscaling is disabled
+replicaCount: 1
+maxReplicaCount: 6
+
+#deployment name overriding
+nameOverride: ""
+fullnameOverride: ""
+
+#App specific details
+app:
+  name: fineract-be
+  port: 8443
+  static_root: /
+#  static_path: /
+
+
+#Readiness/ Liveness probes
+  probe:
+    type: none   #or tcp
+    path: /
+    port: app
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+
+image:
+  repository: registry-staging.orosbank.com/fineract-be
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+
+# Pull .env secrets from k8s secrets
+env_secrets:
+  enabled: true
+  name: fineract-be   #Secret containing all environment variables
+
+
+#Set additional manual env vars
+extra_env_vars: {}
+  #API_KEY: 1234rfd
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# App pod resources
+resources:
+  limits:
+    cpu: 450m
+    memory: 4125Mi
+  requests:
+    cpu: 50m
+    memory: 200Mi
+
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationValue: 150Mi
+
+
+service:
+  type: ClusterIP   # LoadBalancer
+  port: 80
+
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+
+  hosts:
+    - host: fineract-be-stg.orosbank.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: fineract-be-tls
+      hosts:
+        - fineract-be-stg.orosbank.com
