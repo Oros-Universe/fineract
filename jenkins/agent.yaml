@@ -15,27 +15,18 @@ spec:
     tty: true
     env:
       - name: DOCKER_HOST
-        value: tcp://localhost:2375
+        value: tcp://docker-master.docker:2375
 
 
-  - name: dind-daemon
-    image: docker:20.10-dind
-    command: ["dockerd", "--host", "tcp://127.0.0.1:2375"]
-    securityContext:
-      privileged: true
-    volumeMounts:
-      - mountPath: /var/run/docker.sock
-        name: docker-sock
-
-
-#  - name: docker
-#    image: docker:latest
-#    command:
-#      - cat
-#    tty: true
+#  - name: dind-daemon
+#    image: docker:20.10-dind
+#    command: ["dockerd", "--host", "tcp://127.0.0.1:2375"]
+#    securityContext:
+#      privileged: true
 #    volumeMounts:
-#    - mountPath: /var/run/docker.sock
-#      name: docker-sock
+#      - mountPath: /var/run/docker.sock
+#        name: docker-sock
+
 
   - name: helm-k8s
     image: alpine/k8s:1.29.2
@@ -43,7 +34,7 @@ spec:
       - cat
     tty: true
 
-  volumes:
-    - name: docker-sock
-      hostPath:
-        path: /var/run/docker.sock
+#  volumes:
+#    - name: docker-sock
+#      hostPath:
+#        path: /var/run/docker.sock
